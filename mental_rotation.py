@@ -295,6 +295,8 @@ class Experiment:
             "You will start with 5 practice trials.",
         ]
 
+        start_rect = pygame.Rect(SCREEN_WIDTH // 2 - 110, SCREEN_HEIGHT - 86, 220, 52)
+
         while self.running:
             mouse_pos = pygame.mouse.get_pos()
             for event in pygame.event.get():
@@ -312,12 +314,13 @@ class Experiment:
                 if line:
                     self.draw_text_centered(line, self.font_small, TEXT_COLOR, 110 + i * 32)
 
-            start_rect = pygame.Rect(SCREEN_WIDTH // 2 - 100, 560, 200, 50)
-            self.draw_button("Start Practice", start_rect, mouse_pos)
-
             # Key reminders
-            pygame.draw.rect(self.screen, WHITE, pygame.Rect(SCREEN_WIDTH//2 - 150, 490, 300, 50), border_radius=8)
-            self.draw_text_centered("S = Same    |    D = Different", self.font_medium, ACCENT_COLOR, 515)
+            key_rect = pygame.Rect(SCREEN_WIDTH // 2 - 180, 530, 360, 60)
+            pygame.draw.rect(self.screen, WHITE, key_rect, border_radius=8)
+            pygame.draw.rect(self.screen, LIGHT_GRAY, key_rect, 2, border_radius=8)
+            self.draw_text_centered("S = Same    |    D = Different", self.font_medium, ACCENT_COLOR, key_rect.centery)
+
+            self.draw_button("Start Practice", start_rect, mouse_pos)
 
             pygame.display.flip()
             self.clock.tick(FPS)
