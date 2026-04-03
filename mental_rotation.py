@@ -92,58 +92,60 @@ def draw_cube(surface, x, y, z, offset_x, offset_y, color, outline=(60, 60, 60))
 
 
 # ─── Block Object Definitions ────────────────────────────────────────────────
-# Shepard-Metzler style: arm-like 3D structures made of cubes
+# Shepard-Metzler style: arm-like 3D structures made of cubes.
+# Each object has a distinct shape. Distractors are mirror reflections
+# (reflected on the X-axis), making them structurally different but
+# similarly complex — matching the original S&M paradigm.
 
-# 10-cube objects (2 variants)
-OBJECTS_10 = [
-    # Object A: L-shape with vertical extension
-    [(0,0,0),(1,0,0),(2,0,0),(2,1,0),(2,2,0),(2,2,1),(2,2,2),(2,2,3),(2,3,3),(2,4,3)],
-    # Object B: Z-shape with vertical extension
-    [(0,0,0),(0,1,0),(0,2,0),(1,2,0),(2,2,0),(2,2,1),(2,2,2),(3,2,2),(3,3,2),(3,4,2)],
+# 10-cube objects: object and its mirror
+OBJECTS_10_NORMAL = [
+    # Object A: L-bend going right then up-right
+    [(0,0,0),(1,0,0),(2,0,0),(3,0,0),(3,1,0),(3,2,0),(3,2,1),(3,2,2),(3,3,2),(3,4,2)],
+]
+OBJECTS_10_MIRROR = [
+    # Object A-mirror: reflected on X axis
+    [(3,0,0),(2,0,0),(1,0,0),(0,0,0),(0,1,0),(0,2,0),(0,2,1),(0,2,2),(0,3,2),(0,4,2)],
 ]
 
-# 8-cube objects (2 variants)
-OBJECTS_8 = [
-    # Object C: T-shape variant
-    [(0,0,0),(1,0,0),(2,0,0),(2,1,0),(2,2,0),(2,2,1),(2,2,2),(3,2,2)],
-    # Object D: S-shape variant
-    [(0,0,0),(0,1,0),(1,1,0),(2,1,0),(2,1,1),(2,1,2),(2,2,2),(2,3,2)],
+# 8-cube objects: object and its mirror
+OBJECTS_8_NORMAL = [
+    # Object B: S-bend
+    [(0,0,0),(1,0,0),(2,0,0),(2,1,0),(2,2,0),(2,2,1),(3,2,1),(4,2,1)],
+]
+OBJECTS_8_MIRROR = [
+    # Object B-mirror: reflected on X axis
+    [(4,0,0),(3,0,0),(2,0,0),(2,1,0),(2,2,0),(2,2,1),(1,2,1),(0,2,1)],
 ]
 
-ALL_OBJECTS = OBJECTS_10 + OBJECTS_8
-OBJECT_NAMES = ["10cube_A", "10cube_B", "8cube_C", "8cube_D"]
+# Index: 0 = 10cube_normal, 1 = 10cube_mirror, 2 = 8cube_normal, 3 = 8cube_mirror
+ALL_OBJECTS = (OBJECTS_10_NORMAL + OBJECTS_10_MIRROR +
+               OBJECTS_8_NORMAL + OBJECTS_8_MIRROR)
+OBJECT_NAMES = ["10cube_A", "10cube_A_mirror", "8cube_B", "8cube_B_mirror"]
 OBJECT_COLORS = [
-    (100, 160, 220),  # blue
+    (100, 160, 220),  # blue for all
     (100, 160, 220),
     (100, 160, 220),
     (100, 160, 220),
 ]
 
-# Distractor pairing: 10-cube distractor for 10-cube, 8-cube for 8-cube
+# Distractor pairing: normal <-> mirror of same cube count
 DISTRACTOR_MAP = {0: 1, 1: 0, 2: 3, 3: 2}
 
 
-def rotate_object_y(cubes, angle_deg):
-    """Rotate a set of cube positions around Y axis by angle_deg."""
-    angle = math.radians(angle_deg)
-    cos_a = round(math.cos(angle))
-    sin_a = round(math.sin(angle))
+def rotate_surface_2d(surface, angle_deg):
+    """Rotate a 2D pygame Surface by angle_deg (picture-plane rotation).
 
-    # Center the object
-    cx = sum(c[0] for c in cubes) / len(cubes)
-    cz = sum(c[2] for c in cubes) / len(cubes)
-
-    rotated = []
-    for x, y, z in cubes:
-        dx, dz = x - cx, z - cz
-        nx = dx * cos_a - dz * sin_a
-        nz = dx * sin_a + dz * cos_a
-        rotated.append((round(nx + cx, 1), y, round(nz + cz, 1)))
-
-    # Normalize to integer grid
-    min_x = min(c[0] for c in rotated)
-    min_z = min(c[2] for c in rotated)
-    return [(round(x - min_x), y, round(z - min_z)) for x, y, z in rotated]
+    This preserves the visual identity of the object while changing its
+    orientation, which is the key manipulation in mental rotation tasks.
+    """
+    rotated = pygame.transform.rotate(surface, angle_deg)
+    # Re-center onto a fixed-size surface to keep consistent positioning
+    size = max(rotated.get_width(), rotated.get_height(), surface.get_width())
+    result = pygame.Surface((size, size), pygame.SRCALPHA)
+    rx = (size - rotated.get_width()) // 2
+    ry = (size - rotated.get_height()) // 2
+    result.blit(rotated, (rx, ry))
+    return result
 
 
 def render_object(cubes, color, size=200):
@@ -255,13 +257,12 @@ class Experiment:
         self.results = []
         self.running = True
 
-        # Pre-render all object surfaces at all angles
+        # Pre-render all objects at base orientation, then apply 2D rotation
         self.object_cache = {}
         for obj_idx, cubes in enumerate(ALL_OBJECTS):
+            base_surf = render_object(cubes, OBJECT_COLORS[obj_idx], 250)
             for angle in [0, 90, 180, 270]:
-                rotated = rotate_object_y(cubes, angle)
-                surf = render_object(rotated, OBJECT_COLORS[obj_idx], 250)
-                self.object_cache[(obj_idx, angle)] = surf
+                self.object_cache[(obj_idx, angle)] = rotate_surface_2d(base_surf, angle)
 
     def draw_text_centered(self, text, font, color, y):
         rendered = font.render(text, True, color)
