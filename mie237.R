@@ -217,29 +217,29 @@ library(broom)
 # 8. secondary covariate analysis using multiple linear regression
 # main treatment effect (rotation_angle) is still handled by the blocked ANOVA above
 # here we examine sex and gaming_group as categorical covariates
-# participant_id is included as a blocking fixed effect
+# rotation_angle is treated as a categorical predictor (factor)
 
 # --- sex as covariate ---
 
 # RT model
-lm_sex_rt <- lm(mean_rt ~ rotation_angle * sex + participant_id, data = summ)
+lm_sex_rt <- lm(mean_rt ~ rotation_angle * sex, data = summ)
 summary(lm_sex_rt)
 tidy(lm_sex_rt)
 
 # Accuracy model
-lm_sex_acc <- lm(mean_acc ~ rotation_angle * sex + participant_id, data = summ)
+lm_sex_acc <- lm(mean_acc ~ rotation_angle * sex, data = summ)
 summary(lm_sex_acc)
 tidy(lm_sex_acc)
 
 # --- gaming group as covariate ---
 
 # RT model
-lm_game_rt <- lm(mean_rt ~ rotation_angle * gaming_group + participant_id, data = summ)
+lm_game_rt <- lm(mean_rt ~ rotation_angle * gaming_group, data = summ)
 summary(lm_game_rt)
 tidy(lm_game_rt)
 
 # Accuracy model
-lm_game_acc <- lm(mean_acc ~ rotation_angle * gaming_group + participant_id, data = summ)
+lm_game_acc <- lm(mean_acc ~ rotation_angle * gaming_group, data = summ)
 summary(lm_game_acc)
 tidy(lm_game_acc)
 
@@ -250,8 +250,7 @@ tidy(lm_game_acc)
 # --- sex x angle: RT ---
 pred_sex_rt <- expand.grid(
   rotation_angle = levels(summ$rotation_angle),
-  sex = levels(summ$sex),
-  participant_id = levels(summ$participant_id)[1]
+  sex = levels(summ$sex)
 )
 
 pred_sex_rt$pred <- predict(lm_sex_rt, newdata = pred_sex_rt)
@@ -268,8 +267,7 @@ ggplot(summ, aes(x = rotation_angle, y = mean_rt, colour = sex)) +
 # sex x angle: Accuracy
 pred_sex_acc <- expand.grid(
   rotation_angle = levels(summ$rotation_angle),
-  sex = levels(summ$sex),
-  participant_id = levels(summ$participant_id)[1]
+  sex = levels(summ$sex)
 )
 
 pred_sex_acc$pred <- predict(lm_sex_acc, newdata = pred_sex_acc)
@@ -286,8 +284,7 @@ ggplot(summ, aes(x = rotation_angle, y = mean_acc, colour = sex)) +
 # gaming group x angle: RT
 pred_game_rt <- expand.grid(
   rotation_angle = levels(summ$rotation_angle),
-  gaming_group = levels(summ$gaming_group),
-  participant_id = levels(summ$participant_id)[1]
+  gaming_group = levels(summ$gaming_group)
 )
 
 pred_game_rt$pred <- predict(lm_game_rt, newdata = pred_game_rt)
@@ -304,8 +301,7 @@ ggplot(summ, aes(x = rotation_angle, y = mean_rt, colour = gaming_group)) +
 # gaming group x angle: Accuracy
 pred_game_acc <- expand.grid(
   rotation_angle = levels(summ$rotation_angle),
-  gaming_group = levels(summ$gaming_group),
-  participant_id = levels(summ$participant_id)[1]
+  gaming_group = levels(summ$gaming_group)
 )
 
 pred_game_acc$pred <- predict(lm_game_acc, newdata = pred_game_acc)
