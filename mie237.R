@@ -265,7 +265,7 @@ ggplot(summ, aes(x = rotation_angle, y = mean_rt, colour = sex)) +
        y = "Mean RT (ms)") +
   theme_classic(base_size = 14)
 
-# --- sex x angle: Accuracy ---
+# sex x angle: Accuracy
 pred_sex_acc <- expand.grid(
   rotation_angle = levels(summ$rotation_angle),
   sex = levels(summ$sex),
@@ -283,7 +283,7 @@ ggplot(summ, aes(x = rotation_angle, y = mean_acc, colour = sex)) +
        y = "Mean Accuracy") +
   theme_classic(base_size = 14)
 
-# --- gaming group x angle: RT ---
+# gaming group x angle: RT
 pred_game_rt <- expand.grid(
   rotation_angle = levels(summ$rotation_angle),
   gaming_group = levels(summ$gaming_group),
@@ -301,7 +301,7 @@ ggplot(summ, aes(x = rotation_angle, y = mean_rt, colour = gaming_group)) +
        y = "Mean RT (ms)") +
   theme_classic(base_size = 14)
 
-# --- gaming group x angle: Accuracy ---
+# gaming group x angle: Accuracy
 pred_game_acc <- expand.grid(
   rotation_angle = levels(summ$rotation_angle),
   gaming_group = levels(summ$gaming_group),
