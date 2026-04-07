@@ -15,7 +15,11 @@ all_data <- all_data %>%
     participant_id = factor(participant_id),
     rotation_angle = factor(rotation_angle, levels = c(0, 90, 180, 270)),
     sex = factor(sex),
-    gaming_group = factor(gaming_group)
+    # categorize gaming experience based on hours per week: <5 = "low", >=5 = "high"
+    gaming_group = factor(
+      ifelse(gaming_hrs_week < 5, "low", "high"),
+      levels = c("low", "high")
+    )
   )
 
 glimpse(all_data)
