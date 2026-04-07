@@ -212,66 +212,109 @@ pairs(emm_rt, adjust = "tukey")
 emm_acc <- emmeans(acc_aov, ~ rotation_angle)
 pairs(emm_acc, adjust = "tukey")
 
-# 8. secondary blocked two-factor ANOVAs with participant-level variables
-# rotation_angle is the within-subject factor
-# sex and gaming_group are participant-level categorical variables
-# participant_id is included as the blocking factor
+library(broom)
 
-# sex x rotation angle
-fit_sex <- aov(mean_rt ~ rotation_angle * sex + participant_id, data = summ)
-summary(fit_sex)
+# 8. secondary covariate analysis using multiple linear regression
+# main treatment effect (rotation_angle) is still handled by the blocked ANOVA above
+# here we examine sex and gaming_group as categorical covariates
+# participant_id is included as a blocking fixed effect
 
-fit_sex_acc <- aov(mean_acc ~ rotation_angle * sex + participant_id, data = summ)
-summary(fit_sex_acc)
+# --- sex as covariate ---
 
-# gaming x rotation angle
-fit_game <- aov(mean_rt ~ rotation_angle * gaming_group + participant_id, data = summ)
-summary(fit_game)
+# RT model
+lm_sex_rt <- lm(mean_rt ~ rotation_angle * sex + participant_id, data = summ)
+summary(lm_sex_rt)
+tidy(lm_sex_rt)
 
-fit_game_acc <- aov(mean_acc ~ rotation_angle * gaming_group + participant_id, data = summ)
-summary(fit_game_acc)
+# Accuracy model
+lm_sex_acc <- lm(mean_acc ~ rotation_angle * sex + participant_id, data = summ)
+summary(lm_sex_acc)
+tidy(lm_sex_acc)
 
-# 9. interaction plots 
+# --- gaming group as covariate ---
 
-# sex x angle: RT
+# RT model
+lm_game_rt <- lm(mean_rt ~ rotation_angle * gaming_group + participant_id, data = summ)
+summary(lm_game_rt)
+tidy(lm_game_rt)
+
+# Accuracy model
+lm_game_acc <- lm(mean_acc ~ rotation_angle * gaming_group + participant_id, data = summ)
+summary(lm_game_acc)
+tidy(lm_game_acc)
+
+
+# 9. regression interaction-profile plots for covariate analyses
+# plots show raw participant-level observations plus model-predicted means
+
+# --- sex x angle: RT ---
+pred_sex_rt <- expand.grid(
+  rotation_angle = levels(summ$rotation_angle),
+  sex = levels(summ$sex),
+  participant_id = levels(summ$participant_id)[1]
+)
+
+pred_sex_rt$pred <- predict(lm_sex_rt, newdata = pred_sex_rt)
+
 ggplot(summ, aes(x = rotation_angle, y = mean_rt, colour = sex)) +
   geom_jitter(width = 0.08, alpha = 0.4, size = 2) +
-  stat_summary(fun = mean, geom = "point", size = 4) +
-  stat_summary(fun = mean, geom = "line", aes(group = sex), linewidth = 1.2) +
-  labs(title = "Interaction: Sex x Angle (RT)",
-       x = "Rotation Angle", y = "Mean RT (ms)") +
+  geom_line(data = pred_sex_rt, aes(y = pred, group = sex), linewidth = 1.2) +
+  geom_point(data = pred_sex_rt, aes(y = pred), size = 4) +
+  labs(title = "Regression Interaction: Sex x Angle (RT)",
+       x = "Rotation Angle",
+       y = "Mean RT (ms)") +
   theme_classic(base_size = 14)
 
-# sex x angle: accuracy
+# --- sex x angle: Accuracy ---
+pred_sex_acc <- expand.grid(
+  rotation_angle = levels(summ$rotation_angle),
+  sex = levels(summ$sex),
+  participant_id = levels(summ$participant_id)[1]
+)
+
+pred_sex_acc$pred <- predict(lm_sex_acc, newdata = pred_sex_acc)
+
 ggplot(summ, aes(x = rotation_angle, y = mean_acc, colour = sex)) +
   geom_jitter(width = 0.08, alpha = 0.4, size = 2) +
-  stat_summary(fun = mean, geom = "point", size = 4) +
-  stat_summary(fun = mean, geom = "line", aes(group = sex), linewidth = 1.2) +
-  labs(title = "Interaction: Sex x Angle (Accuracy)",
-       x = "Rotation Angle", y = "Mean Accuracy") +
+  geom_line(data = pred_sex_acc, aes(y = pred, group = sex), linewidth = 1.2) +
+  geom_point(data = pred_sex_acc, aes(y = pred), size = 4) +
+  labs(title = "Regression Interaction: Sex x Angle (Accuracy)",
+       x = "Rotation Angle",
+       y = "Mean Accuracy") +
   theme_classic(base_size = 14)
 
-# gaming x angle: RT
+# --- gaming group x angle: RT ---
+pred_game_rt <- expand.grid(
+  rotation_angle = levels(summ$rotation_angle),
+  gaming_group = levels(summ$gaming_group),
+  participant_id = levels(summ$participant_id)[1]
+)
+
+pred_game_rt$pred <- predict(lm_game_rt, newdata = pred_game_rt)
+
 ggplot(summ, aes(x = rotation_angle, y = mean_rt, colour = gaming_group)) +
   geom_jitter(width = 0.08, alpha = 0.4, size = 2) +
-  stat_summary(fun = mean, geom = "point", size = 4) +
-  stat_summary(fun = mean, geom = "line", aes(group = gaming_group), linewidth = 1.2) +
-  labs(title = "Interaction: Gaming x Angle (RT)",
-       x = "Rotation Angle", y = "Mean RT (ms)") +
+  geom_line(data = pred_game_rt, aes(y = pred, group = gaming_group), linewidth = 1.2) +
+  geom_point(data = pred_game_rt, aes(y = pred), size = 4) +
+  labs(title = "Regression Interaction: Gaming Group x Angle (RT)",
+       x = "Rotation Angle",
+       y = "Mean RT (ms)") +
   theme_classic(base_size = 14)
 
-# gaming x angle: accuracy
+# --- gaming group x angle: Accuracy ---
+pred_game_acc <- expand.grid(
+  rotation_angle = levels(summ$rotation_angle),
+  gaming_group = levels(summ$gaming_group),
+  participant_id = levels(summ$participant_id)[1]
+)
+
+pred_game_acc$pred <- predict(lm_game_acc, newdata = pred_game_acc)
+
 ggplot(summ, aes(x = rotation_angle, y = mean_acc, colour = gaming_group)) +
   geom_jitter(width = 0.08, alpha = 0.4, size = 2) +
-  stat_summary(fun = mean, geom = "point", size = 4) +
-  stat_summary(fun = mean, geom = "line", aes(group = gaming_group), linewidth = 1.2) +
-  labs(title = "Interaction: Gaming x Angle (Accuracy)",
-       x = "Rotation Angle", y = "Mean Accuracy") +
+  geom_line(data = pred_game_acc, aes(y = pred, group = gaming_group), linewidth = 1.2) +
+  geom_point(data = pred_game_acc, aes(y = pred), size = 4) +
+  labs(title = "Regression Interaction: Gaming Group x Angle (Accuracy)",
+       x = "Rotation Angle",
+       y = "Mean Accuracy") +
   theme_classic(base_size = 14)
-
-# simple effects if interaction is significant (lab 11)
-emm_sex_rt <- emmeans(fit_sex, ~ rotation_angle | sex)
-pairs(emm_sex_rt, adjust = "tukey")
-
-emm_game_rt <- emmeans(fit_game, ~ rotation_angle | gaming_group)
-pairs(emm_game_rt, adjust = "tukey")
