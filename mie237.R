@@ -200,39 +200,18 @@ ggplot(acc_residuals, aes(x = resid)) +
   labs(title = "Accuracy: Histogram of Residuals", x = "Residuals", y = "Count") +
   theme_minimal()
 
-# 7. post-hoc: Tukey and Bonferroni
-# TukeyHSD will tell us which specific angle pairs differ
+# 7. post-hoc pairwise comparisons using emmeans with Tukey adjustment
 
-# Tukey
-tukey_rt <- TukeyHSD(rt_aov, "rotation_angle")
-tukey_rt
-plot(tukey_rt)
-
-tukey_acc <- TukeyHSD(acc_aov, "rotation_angle")
-tukey_acc
-plot(tukey_acc)
-
-# Bonferroni using pairwise t-tests
-# paired = TRUE because it is within-subjects
-pairwise.t.test(summ$mean_rt, summ$rotation_angle,
-                paired = TRUE, p.adjust.method = "bonferroni")
-
-pairwise.t.test(summ$mean_acc, summ$rotation_angle,
-                paired = TRUE, p.adjust.method = "bonferroni")
-
-# emmeans approach 
 emm_rt <- emmeans(rt_aov, ~ rotation_angle)
-pairs(emm_rt, adjust = "bonferroni")
 pairs(emm_rt, adjust = "tukey")
 
 emm_acc <- emmeans(acc_aov, ~ rotation_angle)
-pairs(emm_acc, adjust = "bonferroni")
 pairs(emm_acc, adjust = "tukey")
 
-# 8. blocked two-factor ANOVA with covariates
-# aov(y ~ treatment * variability + participant)
-# here rotation_angle is the "treatment" and sex/gaming are "variability"
-# participant_id will be the block
+# 8. secondary blocked two-factor ANOVAs with participant-level variables
+# rotation_angle is the within-subject factor
+# sex and gaming_group are participant-level categorical variables
+# participant_id is included as the blocking factor
 
 # sex x rotation angle
 fit_sex <- aov(mean_rt ~ rotation_angle * sex + participant_id, data = summ)
@@ -292,28 +271,3 @@ pairs(emm_sex_rt, adjust = "tukey")
 
 emm_game_rt <- emmeans(fit_game, ~ rotation_angle | gaming_group)
 pairs(emm_game_rt, adjust = "tukey")
-
-
-# 10. chi-squared test 
-# this will test whether proportion correct/incorrect is independent of angle
-# uses trial-level data (not aggregated means)
-
-observed <- table(all_data$rotation_angle, all_data$correct)
-colnames(observed) <- c("Incorrect", "Correct")
-observed
-
-chisq.test(observed)
-
-# bar plot of proportions
-count_df <- all_data %>%
-  group_by(rotation_angle, correct) %>%
-  summarize(n = n(), .groups = "drop") %>%
-  group_by(rotation_angle) %>%
-  mutate(prop = n / sum(n),
-         outcome = ifelse(correct == 1, "Correct", "Incorrect"))
-
-ggplot(count_df, aes(x = rotation_angle, y = prop, fill = outcome)) +
-  geom_col(position = "dodge") +
-  labs(title = "Proportion Correct/Incorrect by Rotation Angle",
-       x = "Rotation Angle", y = "Proportion", fill = "Outcome") +
-  theme_minimal()
