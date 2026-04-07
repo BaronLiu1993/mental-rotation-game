@@ -44,7 +44,7 @@ COUNTDOWN_SECS = 3
 RESPONSE_KEY_SAME = pygame.K_s      # 'S' for same
 RESPONSE_KEY_DIFF = pygame.K_d      # 'D' for different
 
-# ─── Isometric 3D Block Rendering ────────────────────────────────────────────
+# Isometric 3D Block Rendering
 
 # Isometric projection helpers
 ISO_SCALE = 18
