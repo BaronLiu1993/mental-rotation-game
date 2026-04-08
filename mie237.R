@@ -149,11 +149,11 @@ ggplot(summ, aes(x = mean_rt)) +
 # each participant did all 4 angles, so participant is a block
 # aov(accuracy ~ condition + participant)
 
-# --- RT ---
+# RT 
 rt_aov <- aov(mean_rt ~ rotation_angle + participant_id, data = summ)
 summary(rt_aov)
 
-# --- Accuracy ---
+# Accuracy 
 acc_aov <- aov(mean_acc ~ rotation_angle + participant_id, data = summ)
 summary(acc_aov)
 
@@ -219,7 +219,7 @@ library(broom)
 # here we examine sex and gaming_group as categorical covariates
 # rotation_angle is treated as a categorical predictor (factor)
 
-# --- sex as covariate ---
+# sex as covariate
 
 # RT model
 lm_sex_rt <- lm(mean_rt ~ rotation_angle * sex, data = summ)
@@ -231,7 +231,7 @@ lm_sex_acc <- lm(mean_acc ~ rotation_angle * sex, data = summ)
 summary(lm_sex_acc)
 tidy(lm_sex_acc)
 
-# --- gaming group as covariate ---
+# gaming group as covariate
 
 # RT model
 lm_game_rt <- lm(mean_rt ~ rotation_angle * gaming_group, data = summ)
@@ -247,7 +247,7 @@ tidy(lm_game_acc)
 # 9. regression interaction-profile plots for covariate analyses
 # plots show raw participant-level observations plus model-predicted means
 
-# --- sex x angle: RT ---
+# sex x angle: RT
 pred_sex_rt <- expand.grid(
   rotation_angle = levels(summ$rotation_angle),
   sex = levels(summ$sex)
